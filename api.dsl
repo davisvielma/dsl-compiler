@@ -1,5 +1,6 @@
 /* PROYECTO: Generador de API REST - DSL Profesional
    PRUEBA: Verificación de Lexer (Líneas, Números y Case Insensitivity)
+   /* Este es un comentario anidado real */
 */
 
 // Probando normalización: Server, SERVER y server deben reconocerse igual
@@ -42,7 +43,8 @@ route /api/v1/auth/register {
 */
 
 // Error de carácter inesperado:
-// # 
+ # 
 
 // Error de comentario multilínea sin cerrar:
 // /* Este comentario se queda abierto hasta el fin del mundo...
+@

@@ -27,15 +27,15 @@ func main() {
 		if item.Typ == lexer.ItemEOF {
 			break
 		}
-		if item.Typ == lexer.ItemError {
-			fmt.Println("\n>>> PROCESO DETENIDO POR ERROR LÉXICO <<<")
-			break
-		}
 	}
 }
 
 func formatType(t lexer.ItemType) string {
-	names := []string{"ERROR", "EOF", "ENTITY", "ROUTE", "SERVER", "PORT", "DB", "METHODS", "TARGET", "ID", "LBRACE", "RBRACE", "COLON", "COMMA", "SLASH"}
+	names := []string{
+		"ERROR", "EOF", "ENTITY", "ROUTE", "SERVER", "PORT", "DB",
+		"METHODS", "TARGET", "ID", "LBRACE", "RBRACE", "COLON",
+		"COMMA", "SLASH", "COMMENT_LINE", "COMMENT_BLOCK", "UNKNOWN",
+	}
 	if int(t) < len(names) {
 		return names[t]
 	}
