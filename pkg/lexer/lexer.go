@@ -100,7 +100,6 @@ func lexText(l *lexer) stateFn {
 				l.backup()
 				return lexIdentifier
 			}
-			// REQUISITO 3: Token Unknown en lugar de errorf
 			l.emit(ItemUnknown)
 		}
 	}
@@ -108,7 +107,6 @@ func lexText(l *lexer) stateFn {
 	return nil
 }
 
-// REQUISITO 2: Tokenizar comentario de línea
 func lexLineComment(l *lexer) stateFn {
 	for {
 		r := l.next()
@@ -125,21 +123,17 @@ func lexBlockComment(l *lexer) stateFn {
 	l.pos += 2 // Saltar el primer /*
 	depth := 1
 	for depth > 0 {
-		// 1. Detectar inicio de comentario anidado
 		if strings.HasPrefix(l.input[l.pos:], "/*") {
 			l.pos += 2
 			depth++
 			continue
 		}
-		// 2. Detectar cierre de comentario
 		if strings.HasPrefix(l.input[l.pos:], "*/") {
 			l.pos += 2
 			depth--
 			continue
 		}
-		// 3. Avanzar si no hay coincidencias
 		if r := l.next(); r == -1 {
-			// Si el archivo termina y depth > 0, el lexer simplemente emite lo que tiene
 			break
 		}
 	}
