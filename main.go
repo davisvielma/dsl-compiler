@@ -2,9 +2,9 @@ package main
 
 import (
 	"dsl-compiler/pkg/lexer"
+	"dsl-compiler/pkg/parser"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -15,30 +15,16 @@ func main() {
 	}
 
 	l := lexer.Lex(string(content))
+	p := parser.New(l)
+	program := p.ParseProgram()
 
-	fmt.Printf("%-15s | %-20s\n", "TIPO DE TOKEN", "VALOR")
-	fmt.Println(strings.Repeat("-", 40))
-
-	for {
-		item := l.NextItem()
-
-		fmt.Printf("%-15s | %v\n", formatType(item.Typ), item)
-
-		if item.Typ == lexer.ItemEOF {
-			break
+	if len(p.Errors()) > 0 {
+		for _, msg := range p.Errors() {
+			fmt.Printf("Error: %s\n", msg)
 		}
+		return
 	}
-}
 
-func formatType(t lexer.ItemType) string {
-	names := []string{
-		"ERROR", "EOF", "ENTITY", "ROUTE", "SERVER", "PORT", "DB",
-		"METHODS", "TARGET", "ID", "LBRACE", "RBRACE", "LPAREN", "RPAREN",
-		"LBRACKET", "RBRACKET", "EQUALS", "COLON", "COMMA", "SLASH", "COMMENT_LINE",
-		"COMMENT_BLOCK", "UNKNOWN",
-	}
-	if int(t) < len(names) {
-		return names[t]
-	}
-	return "UNKNOWN"
+	fmt.Println("AST Generado correctamente:")
+	fmt.Println(program.String())
 }

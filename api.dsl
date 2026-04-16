@@ -6,7 +6,7 @@
 // Probando normalización: Server, SERVER y server deben reconocerse igual
 SERVER MiTienda_2026 {
     PORT: 9090
-    DB: sqlite3
+    DB: tienda_abarrotes
 }
 
 /* Entidad: Order
@@ -14,16 +14,16 @@ SERVER MiTienda_2026 {
 */
 ENTITY Order_v1 {
     id: int
-    customer_id: int (unique, required)
-    total_price: float
+    customer_id: int (unique, required) = "1sd36-96"
+    total_price: float = 23.52
     status: string // "pending", "shipped", "delivered"
-    opcional: bool
+    opcional: bool = false
     //@
 }
 
 // Probando comentarios de una sola línea pegados a código
 entity Category { // Categorización de productos
-    id: int
+    id: int = 15
     name: string
     tags: []string
 }
@@ -31,12 +31,12 @@ entity Category { // Categorización de productos
 /* Probando rutas con números, múltiples slashes
    y la normalización de 'Route', 'Methods' y 'Target'
 */
-Route /api/v2/orders/report {
+Route "/api/v2/orders/report" {
     METHODS: GET
     TARGET: Order_v1
 }
 
-route /api/v1/auth/register {
+route "/api/v1/auth/register-user/:id" {
     methods: POST, PUT
     target: User
 }
@@ -51,3 +51,4 @@ route /api/v1/auth/register {
 // /* Este comentario se queda abierto hasta el fin del mundo...
 =
 @
+:
