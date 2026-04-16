@@ -5,9 +5,9 @@ import (
 	"unicode/utf8"
 )
 
-type stateFn func(*lexer) stateFn
+type stateFn func(*Lexer) stateFn
 
-type lexer struct {
+type Lexer struct {
 	input string
 	start int
 	pos   int
@@ -16,8 +16,8 @@ type lexer struct {
 	state stateFn
 }
 
-func Lex(input string) *lexer {
-	l := &lexer{
+func Lex(input string) *Lexer {
+	l := &Lexer{
 		input: input,
 		state: lexText,
 		items: make(chan Item, 2),
@@ -26,20 +26,20 @@ func Lex(input string) *lexer {
 	return l
 }
 
-func (l *lexer) run() {
+func (l *Lexer) run() {
 	for l.state != nil {
 		l.state = l.state(l)
 	}
 	close(l.items)
 }
 
-func (l *lexer) NextItem() Item {
+func (l *Lexer) NextItem() Item {
 	return <-l.items
 }
 
 // --- Herramientas de movimiento ---
 
-func (l *lexer) next() rune {
+func (l *Lexer) next() rune {
 	if l.pos >= len(l.input) {
 		l.width = 0
 		return -1
@@ -50,22 +50,22 @@ func (l *lexer) next() rune {
 	return r
 }
 
-func (l *lexer) ignore() { l.start = l.pos }
-func (l *lexer) backup() { l.pos -= l.width }
-func (l *lexer) peek() rune {
+func (l *Lexer) ignore() { l.start = l.pos }
+func (l *Lexer) backup() { l.pos -= l.width }
+func (l *Lexer) peek() rune {
 	r := l.next()
 	l.backup()
 	return r
 }
 
-func (l *lexer) emit(t ItemType) {
+func (l *Lexer) emit(t ItemType) {
 	l.items <- Item{Typ: t, Val: l.input[l.start:l.pos]}
 	l.start = l.pos
 }
 
 // --- Lógica de Estados ---
 
-func lexText(l *lexer) stateFn {
+func lexText(l *Lexer) stateFn {
 	for {
 		if strings.HasPrefix(l.input[l.pos:], "//") {
 			return lexLineComment
@@ -97,11 +97,16 @@ func lexText(l *lexer) stateFn {
 		case ']':
 			l.emit(ItemRightBracket)
 		case '=':
-			l.emit(ItemEquals)
+			l.emit(ItemAssign)
 		case ':':
 			l.emit(ItemColon)
 		case ',':
 			l.emit(ItemComma)
+		case '"':
+			return lexString
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			l.backup()
+			return lexNumber
 		case '/':
 			l.backup()
 			return lexIdentifier
@@ -117,7 +122,7 @@ func lexText(l *lexer) stateFn {
 	return nil
 }
 
-func lexLineComment(l *lexer) stateFn {
+func lexLineComment(l *Lexer) stateFn {
 	for {
 		r := l.next()
 		if r == '\n' || r == -1 {
@@ -128,9 +133,8 @@ func lexLineComment(l *lexer) stateFn {
 	return lexText
 }
 
-// REQUISITO 4: Comentarios anidados
-func lexBlockComment(l *lexer) stateFn {
-	l.pos += 2 // Saltar el primer /*
+func lexBlockComment(l *Lexer) stateFn {
+	l.pos += 2
 	depth := 1
 	for depth > 0 {
 		if strings.HasPrefix(l.input[l.pos:], "/*") {
@@ -151,7 +155,51 @@ func lexBlockComment(l *lexer) stateFn {
 	return lexText
 }
 
-func lexIdentifier(l *lexer) stateFn {
+func lexString(l *Lexer) stateFn {
+	l.ignore()
+	for {
+		r := l.next()
+		if r == '"' || r == -1 {
+			break
+		}
+	}
+	l.backup()
+	l.emit(ItemString)
+	l.next()
+	l.ignore()
+	return lexText
+}
+
+func lexNumber(l *Lexer) stateFn {
+	isFloat := false
+	for {
+		r := l.peek()
+		if r == '.' {
+			if isFloat {
+				break
+			}
+			isFloat = true
+			l.next()
+			continue
+		}
+
+		if isDigit(r) {
+			l.next()
+			continue
+		}
+
+		break
+	}
+
+	if isFloat {
+		l.emit(ItemFloat)
+	} else {
+		l.emit(ItemInt)
+	}
+	return lexText
+}
+
+func lexIdentifier(l *Lexer) stateFn {
 	for {
 		r := l.next()
 		if !isAlphaNumeric(r) && r != '/' {
@@ -175,6 +223,8 @@ func lexIdentifier(l *lexer) stateFn {
 		l.emit(ItemMethods)
 	case "target":
 		l.emit(ItemTarget)
+	case "true", "false":
+		l.emit(ItemBoolean)
 	default:
 		l.emit(ItemIdentifier)
 	}
@@ -184,4 +234,7 @@ func lexIdentifier(l *lexer) stateFn {
 func isSpace(r rune) bool { return r == ' ' || r == '\n' || r == '\t' || r == '\r' }
 func isAlphaNumeric(r rune) bool {
 	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_'
+}
+func isDigit(r rune) bool {
+	return r >= '0' && r <= '9'
 }
