@@ -17,6 +17,11 @@ const (
 	ItemIdentifier
 	ItemLeftBrace
 	ItemRightBrace
+	ItemLeftParen
+	ItemRightParen
+	ItemLeftBracket
+	ItemRightBracket
+	ItemEquals
 	ItemColon
 	ItemComma
 	ItemSlash

@@ -88,6 +88,16 @@ func lexText(l *lexer) stateFn {
 			l.emit(ItemLeftBrace)
 		case '}':
 			l.emit(ItemRightBrace)
+		case '(':
+			l.emit(ItemLeftParen)
+		case ')':
+			l.emit(ItemRightParen)
+		case '[':
+			l.emit(ItemLeftBracket)
+		case ']':
+			l.emit(ItemRightBracket)
+		case '=':
+			l.emit(ItemEquals)
 		case ':':
 			l.emit(ItemColon)
 		case ',':

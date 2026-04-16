@@ -14,9 +14,10 @@ SERVER MiTienda_2026 {
 */
 ENTITY Order_v1 {
     id: int
-    customer_id: int
+    customer_id: int (unique, required)
     total_price: float
     status: string // "pending", "shipped", "delivered"
+    opcional: bool
     //@
 }
 
@@ -24,6 +25,7 @@ ENTITY Order_v1 {
 entity Category { // Categorización de productos
     id: int
     name: string
+    tags: []string
 }
 
 /* Probando rutas con números, múltiples slashes
@@ -47,4 +49,5 @@ route /api/v1/auth/register {
 
 // Error de comentario multilínea sin cerrar:
 // /* Este comentario se queda abierto hasta el fin del mundo...
+=
 @

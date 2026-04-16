@@ -33,8 +33,9 @@ func main() {
 func formatType(t lexer.ItemType) string {
 	names := []string{
 		"ERROR", "EOF", "ENTITY", "ROUTE", "SERVER", "PORT", "DB",
-		"METHODS", "TARGET", "ID", "LBRACE", "RBRACE", "COLON",
-		"COMMA", "SLASH", "COMMENT_LINE", "COMMENT_BLOCK", "UNKNOWN",
+		"METHODS", "TARGET", "ID", "LBRACE", "RBRACE", "LPAREN", "RPAREN",
+		"LBRACKET", "RBRACKET", "EQUALS", "COLON", "COMMA", "SLASH", "COMMENT_LINE",
+		"COMMENT_BLOCK", "UNKNOWN",
 	}
 	if int(t) < len(names) {
 		return names[t]
