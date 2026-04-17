@@ -290,7 +290,7 @@ func (p *Parser) parseRouteMethods(stmt *ast.RouteStatement) {
 
 	p.nextToken()
 
-	for !p.curTokenIs(lexer.ItemRightBrace) && !p.curTokenIs(lexer.ItemTarget) {
+	for !p.curTokenIs(lexer.ItemRightBrace) && !p.curTokenIs(lexer.ItemTarget) && !p.curTokenIs(lexer.ItemEOF) {
 		if p.curTokenIs(lexer.ItemIdentifier) {
 			stmt.Methods = append(stmt.Methods, &ast.Identifier{Token: p.curToken, Value: p.curToken.Val})
 		}
@@ -298,6 +298,14 @@ func (p *Parser) parseRouteMethods(stmt *ast.RouteStatement) {
 			p.nextToken()
 		}
 		p.nextToken()
+	}
+
+	if len(stmt.Methods) == 0 {
+		msg := fmt.Sprintf(
+			"En la ruta '%s' se debe definir al menos un método después de 'METHODS'",
+			stmt.Path.Value,
+		)
+		p.addError(msg)
 	}
 }
 
