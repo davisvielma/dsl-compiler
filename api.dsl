@@ -1,54 +1,27 @@
-/* PROYECTO: Generador de API REST - DSL Profesional
-   PRUEBA: Verificación de Lexer (Líneas, Números y Case Insensitivity)
-   /* Este es un comentario anidado real */
-*/
-
-// Probando normalización: Server, SERVER y server deben reconocerse igual
-SERVER MiTienda_2026 {
-    PORT: 9090
-    DB: tienda_abarrotes
+SERVER BookStoreAPI {
+    PORT: 3000
+    DB: bookstore_db
 }
 
-/* Entidad: Order
-   Probando Identificadores con números y guiones bajos
-*/
-ENTITY Order_v1 {
-    id: int
-    customer_id: int (unique, required) = "1sd36-96"
-    total_price: float = 23.52
-    status: string // "pending", "shipped", "delivered"
-    opcional: bool = false
-    //@
+ENTITY Author {
+    name: string (unique, optional)
+    nationality: string = "Venezolano"
+    age: int
 }
 
-// Probando comentarios de una sola línea pegados a código
-entity Category { // Categorización de productos
-    id: int = 15
-    name: string
-    tags: []string
+ENTITY Book {
+    title: string
+    pages: int (unique)
+    price: float (optional)
+    author: Author
 }
 
-/* Probando rutas con números, múltiples slashes
-   y la normalización de 'Route', 'Methods' y 'Target'
-*/
-Route "/api/v2/orders/report" {
-    METHODS: GET
-    TARGET: Order_v1
+ROUTE "/authors" {
+    METHODS: GET, POST, DELETE
+    TARGET: Author
 }
 
-route "/api/v1/auth/register-user/:id" {
-    methods: POST, PUT
-    target: User
+ROUTE "/books" {
+    METHODS: GET, POST, PUT, DELETE
+    TARGET: Book
 }
-
-/* CASOS DE PRUEBA DE ERROR (Descomenta uno a la vez para probar el errorf)
-*/
-
-// Error de carácter inesperado:
- # 
-
-// Error de comentario multilínea sin cerrar:
-// /* Este comentario se queda abierto hasta el fin del mundo...
-=
-@
-:
