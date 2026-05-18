@@ -174,43 +174,54 @@ func (g *Generator) generateModels() error {
 		for _, field := range entity.Fields {
 			goType := g.mapTypeToGo(field.Type)
 			ptr := ""
-			gorm := ""
+			var gormModifiers []string
 			binding := ""
 
 			if field.IsOptional {
 				ptr = "*"
 			} else {
-				gorm = "not null"
+				gormModifiers = append(gormModifiers, "not null")
 				binding = "binding:\"required\""
 			}
 
-			// 2. Modificador Unique
 			if field.IsUnique {
-				if gorm != "" {
-					gorm += ";"
-				}
-				gorm += "unique"
+				gormModifiers = append(gormModifiers, "unique")
 			}
+
+			// --- INICIO DE LA MAGIA PARA VALORES POR DEFECTO ---
+			if field.DefaultValue != nil {
+				dv := field.DefaultValue.String()
+				// GORM requiere que los strings en 'default' lleven comillas simples
+				// Tu AST ya tiene tipos específicos, podemos usarlos:
+				if field.Type == "string" {
+					// Limpiamos las comillas del AST para el tag de GORM
+					cleanVal := strings.Trim(dv, "\"")
+					gormModifiers = append(gormModifiers, fmt.Sprintf("default:'%s'", cleanVal))
+				} else {
+					gormModifiers = append(gormModifiers, fmt.Sprintf("default:%s", dv))
+				}
+			}
+			// --- FIN DE LA MAGIA ---
 
 			if field.IsRelation {
 				relID := caser.String(field.Name) + "ID"
-
 				tagID := fmt.Sprintf("json:\"%s_id\"", strings.ToLower(field.Name))
-				if gorm != "" {
-					tagID += fmt.Sprintf(" gorm:\"%s\"", gorm)
+
+				if len(gormModifiers) > 0 {
+					tagID += fmt.Sprintf(" gorm:\"%s\"", strings.Join(gormModifiers, ";"))
 				}
 				if binding != "" {
 					tagID += " " + binding
 				}
 
 				content += fmt.Sprintf("  %s %suuid.UUID `%s` \n", relID, ptr, tagID)
-
 				content += fmt.Sprintf("  %s *%s `gorm:\"foreignKey:%s\" json:\"%s,omitempty\"` \n",
 					caser.String(field.Name), field.Type, relID, strings.ToLower(field.Name))
 			} else {
 				tag := fmt.Sprintf("json:\"%s\"", strings.ToLower(field.Name))
-				if gorm != "" {
-					tag += fmt.Sprintf(" gorm:\"%s\"", gorm)
+
+				if len(gormModifiers) > 0 {
+					tag += fmt.Sprintf(" gorm:\"%s\"", strings.Join(gormModifiers, ";"))
 				}
 				if binding != "" {
 					tag += " " + binding
@@ -319,22 +330,32 @@ func Update%s(c *gin.Context) {
   var item models.%s
   id := c.Param("id")
   
-  // Buscamos si existe ANTES de intentar actualizar
+  // 1. Verificar si el registro existe
   if err := config.DB.First(&item, "id = ?", id).Error; err != nil {
     c.JSON(http.StatusNotFound, gin.H{"error": "Registro no encontrado para actualizar"})
     return
   }
 
-  if err := c.ShouldBindJSON(&item); err != nil {
-    c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+  // 2. Mapear los nuevos datos del JSON
+  var input models.%s
+  if err := c.ShouldBindJSON(&input); err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos: " + err.Error()})
     return
   }
   
-  // Guardamos los cambios sobre el objeto encontrado
-  config.DB.Save(&item)
+  // 3. Intentar actualizar y CAPTURAR error de duplicados (Unique)
+  if err := config.DB.Model(&item).Updates(input).Error; err != nil {
+    // Si el error contiene "Duplicate entry", es una violación de unicidad
+    c.JSON(http.StatusConflict, gin.H{
+        "error": "Error de restricción: posiblemente el valor ya existe",
+        "details": err.Error(),
+    })
+    return
+  }
+  
   c.JSON(http.StatusOK, item)
 }
-`, exportName, exportName, exportName)
+`, exportName, exportName, exportName, exportName)
 		}
 
 		// --- DELETE: Generamos Delete ---

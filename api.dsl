@@ -1,27 +1,52 @@
-SERVER BookStoreAPI {
-    PORT: 3000
-    DB: bookstore_db
+SERVER TechStoreAPI {
+    PORT: 5000
+    DB: tech_store_db
 }
 
-ENTITY Author {
-    name: string (unique, optional)
-    nationality: string = "Venezolano"
-    age: int
+ENTITY Category {
+    name: string (unique)
+    description: string (optional)
+    active: bool = true
 }
 
-ENTITY Book {
-    title: string
-    pages: int (unique)
-    price: float (optional)
-    author: Author
+ENTITY Product {
+    name: string
+    sku: string (unique)
+    price: float
+    stock: int = 0
+    category: Category
 }
 
-ROUTE "/authors" {
+ENTITY Customer {
+    username: string (unique)
+    email: string (unique)
+    vip: bool = false
+}
+
+ENTITY Order {
+    order_code: string (unique)
+    total: float = 0.0
+    status: string = "pending"
+    customer: Customer
+    product: Product
+}
+
+ROUTE "/categories" {
     METHODS: GET, POST, DELETE
-    TARGET: Author
+    TARGET: Category
 }
 
-ROUTE "/books" {
+ROUTE "/products" {
     METHODS: GET, POST, PUT, DELETE
-    TARGET: Book
+    TARGET: Product
+}
+
+ROUTE "/customers" {
+    METHODS: GET, POST, PUT
+    TARGET: Customer
+}
+
+ROUTE "/orders" {
+    METHODS: GET, POST, DELETE
+    TARGET: Order
 }
