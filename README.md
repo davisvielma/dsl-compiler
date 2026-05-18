@@ -27,7 +27,7 @@ La arquitectura del proyecto separa estrictamente la fase de análisis del compi
 ├── api.dsl              # Archivo de especificación DSL (Entorno de pruebas)
 ├── pkg/
 │   └── analyzer/        # Análisis semántico y Tabla de Símbolos
-│   └── generator/       # Fase de Síntesis (Back-end del compilador)
+│   └── generator/       # Generador de codigo
 │   ├── lexer/           # Analizador léxico (Extracción de tokens)
 │   ├── parser/          # Analizador sintáctico (Construcción del AST)
 │   └── ast/             # ast (Árbol de Sintaxis Abstracta)
