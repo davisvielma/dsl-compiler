@@ -5,7 +5,7 @@ SERVER BookStoreAPI {
 
 ENTITY Author {
     name: string (unique, optional)
-    nationality: string = "Venezolano"
+    nationality: string (optional) = "Venezolano" 
     age: int
 }
 

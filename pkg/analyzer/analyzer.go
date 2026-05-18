@@ -64,13 +64,18 @@ func (a *SemanticAnalyzer) CollectDefinitions() {
 					continue
 				}
 
+				if field.DefaultValue != nil {
+					field.IsOptional = true
+				}
+
 				entitySym.Fields[field.Name.Value] = FieldSymbol{
-					Name:       fieldName,
-					Type:       field.DataType.Value,
-					IsArray:    field.IsArray,
-					IsOptional: field.IsOptional,
-					IsUnique:   field.IsUnique,
-					IsRelation: false,
+					Name:         fieldName,
+					Type:         field.DataType.Value,
+					IsArray:      field.IsArray,
+					IsOptional:   field.IsOptional,
+					IsUnique:     field.IsUnique,
+					IsRelation:   false,
+					DefaultValue: field.DefaultValue,
 				}
 			}
 

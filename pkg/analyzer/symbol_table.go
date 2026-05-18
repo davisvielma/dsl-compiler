@@ -6,12 +6,13 @@ import (
 
 // FieldSymbol guarda los atributos de un campo
 type FieldSymbol struct {
-	Name       string
-	Type       string
-	IsArray    bool
-	IsOptional bool
-	IsUnique   bool
-	IsRelation bool
+	Name         string
+	Type         string
+	IsArray      bool
+	IsOptional   bool
+	IsUnique     bool
+	IsRelation   bool
+	DefaultValue ast.Expression
 }
 
 // EntitySymbol guarda la metadata de la entidad para validar relaciones y campos
